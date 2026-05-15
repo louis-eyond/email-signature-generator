@@ -26,6 +26,23 @@ A free, open-source tool for creating professional HTML email signatures. No sig
 4. Click **Copy signature** and paste into your email client
 5. Follow the setup instructions for your specific email app
 
+## Testing
+
+We use Pytest and Playwright for End-to-End testing to ensure the application logic correctly updates the DOM and safely handles HTML injection.
+
+### Setup Tests
+
+```bash
+pip install -r requirements.txt
+playwright install chromium
+```
+
+### Run Tests
+
+```bash
+python3 -m pytest tests/
+```
+
 ## Deploy Your Own
 
 ### GitHub Pages (free)
