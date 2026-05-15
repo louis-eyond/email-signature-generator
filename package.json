@@ -1,0 +1,24 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "A free, open-source tool for creating professional HTML email signatures. No sign-up, no server, no tracking — runs entirely in your browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/louis-eyond/email-signature-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/louis-eyond/email-signature-generator/issues"
+  },
+  "homepage": "https://github.com/louis-eyond/email-signature-generator#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}
