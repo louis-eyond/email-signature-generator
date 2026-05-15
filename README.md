@@ -2,7 +2,7 @@
 
 A free, open-source tool for creating professional HTML email signatures. No sign-up, no server, no tracking — runs entirely in your browser.
 
-**[Try it live →](https://signatures.clarkemedia.ie)**
+**[Try it live →](https://louis-eyond.github.io/email-signature-generator/)**
 
 ## Features
 
@@ -20,7 +20,7 @@ A free, open-source tool for creating professional HTML email signatures. No sig
 
 ## How to Use
 
-1. Open `index.html` in any modern browser (or visit the [live version](https://signatures.clarkemedia.ie))
+1. Open `index.html` in any modern browser (or visit the [live version](https://louis-eyond.github.io/email-signature-generator/))
 2. Fill in your details — leave any field blank to hide it from the signature
 3. Pick an accent colour to match your brand
 4. Click **Copy signature** and paste into your email client
@@ -77,9 +77,10 @@ MIT — see [LICENSE](LICENSE) for details.
 ## Credits
 
 Created by [Eoin McMahon](https://clarkemedia.ie) at [Clarke Media](https://clarkemedia.ie).
+Modified and Hosted by Louis, for [MRSware Users](https://mrsware.com).
 
 Social icons provided by [Icons8](https://icons8.com).
 
 ---
 
-If this tool saved you time, consider [buying me a coffee ☕](https://paypal.me/eoinmcm)
+If this tool saved you time, consider [buying me a coffee ☕](https://buymeacoffee.com/louiseyond)
