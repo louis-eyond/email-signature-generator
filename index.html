@@ -754,7 +754,7 @@
             } else {
               label = 'C';
               href = escAttr(addProto(v.meeting));
-              text = "Schedule a meeting";
+              text = stripProto(v.meeting);
             }
 
             h += '<tr>';
