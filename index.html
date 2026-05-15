@@ -663,8 +663,8 @@
 
       function render() {
         var v = getValues();
-        var f = v.font;
-        var c = v.color;
+        var f = escAttr(v.font);
+        var c = escAttr(v.color);
 
         var hasLogo    = !!v.logo;
         var hasName    = !!v.name;
