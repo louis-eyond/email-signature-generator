@@ -735,6 +735,7 @@
           if (hasWebsite) contactRows.push('website');
           if (hasMeeting) contactRows.push('meeting');
 
+          var contactRowsHTML = [];
           contactRows.forEach(function (type, i) {
             var isLast = i === contactRows.length - 1;
             var pb = isLast ? '0' : '4';
@@ -758,13 +759,14 @@
               text = stripProto(v.meeting);
             }
 
-            h += '<tr>';
-            h += '<td valign="middle" style="font-family: ' + f + '; font-size: 12px; font-weight: bold; color: ' + c + '; padding: 0 8px ' + pb + 'px 0; line-height: 1.5;">' + label + '</td>';
-            h += '<td valign="middle" style="font-family: ' + f + '; font-size: 12px; color: #555555; padding: 0 0 ' + pb + 'px 0; line-height: 1.5; white-space: nowrap;">';
-            h += '<a href="' + href + '" style="color: #555555; text-decoration: none;">' + esc(text) + '</a>';
-            h += '</td>';
-            h += '</tr>';
+            contactRowsHTML.push('<tr>');
+            contactRowsHTML.push('<td valign="middle" style="font-family: ' + f + '; font-size: 12px; font-weight: bold; color: ' + c + '; padding: 0 8px ' + pb + 'px 0; line-height: 1.5;">' + label + '</td>');
+            contactRowsHTML.push('<td valign="middle" style="font-family: ' + f + '; font-size: 12px; color: #555555; padding: 0 0 ' + pb + 'px 0; line-height: 1.5; white-space: nowrap;">');
+            contactRowsHTML.push('<a href="' + href + '" style="color: #555555; text-decoration: none;">' + esc(text) + '</a>');
+            contactRowsHTML.push('</td>');
+            contactRowsHTML.push('</tr>');
           });
+          h += contactRowsHTML.join('');
 
           h += '</table>';
           h += '</td>';
