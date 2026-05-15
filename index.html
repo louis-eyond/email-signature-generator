@@ -883,28 +883,12 @@
               })
             ]);
             flash(richBtn, 'Copy signature', 'Copied!');
-            return;
+          } else {
+            throw new Error('Clipboard API not available');
           }
-        } catch (e) { /* fall through */ }
-
-        var temp = document.createElement('div');
-        temp.style.position = 'fixed';
-        temp.style.left = '-10000px';
-        temp.innerHTML = html;
-        document.body.appendChild(temp);
-        var range = document.createRange();
-        range.selectNode(temp);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        try {
-          document.execCommand('copy');
-          flash(richBtn, 'Copy signature', 'Copied!');
         } catch (e) {
           alert('Copy failed — please select the signature manually and copy it.');
         }
-        sel.removeAllRanges();
-        document.body.removeChild(temp);
       });
 
       htmlBtn.addEventListener('click', async function () {
@@ -913,18 +897,14 @@
           return;
         }
         try {
-          await navigator.clipboard.writeText(html);
-          flash(htmlBtn, 'Copy HTML source', 'Copied!');
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(html);
+            flash(htmlBtn, 'Copy HTML source', 'Copied!');
+          } else {
+            throw new Error('Clipboard API not available');
+          }
         } catch (e) {
-          var ta = document.createElement('textarea');
-          ta.value = html;
-          ta.style.position = 'fixed';
-          ta.style.opacity = '0';
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-          flash(htmlBtn, 'Copy HTML source', 'Copied!');
+          alert('Copy failed — please copy the HTML source manually.');
         }
       });
 
