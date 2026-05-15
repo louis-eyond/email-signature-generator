@@ -394,6 +394,10 @@
           <label for="sig-website">Website</label>
           <input id="sig-website" type="text" value="www.clarkemedia.ie" autocomplete="off" placeholder="example.com">
         </div>
+        <div class="field field-full">
+          <label for="sig-meeting">Schedule a meeting link</label>
+          <input id="sig-meeting" type="url" value="" autocomplete="off" placeholder="https://calendly.com/...">
+        </div>
       </div>
 
       <hr class="section-divider">
@@ -608,7 +612,7 @@
       // ============= FORM ELEMENTS =============
       var ids = [
         'sig-name', 'sig-title', 'sig-company',
-        'sig-phone', 'sig-email', 'sig-website',
+        'sig-phone', 'sig-email', 'sig-website', 'sig-meeting',
         'sig-logo', 'sig-font', 'sig-color', 'sig-color-hex',
         'sig-linkedin', 'sig-twitter', 'sig-facebook', 'sig-instagram', 'sig-github',
         'sig-disclaimer-toggle', 'sig-disclaimer'
@@ -648,6 +652,7 @@
           phone:     el['sig-phone'].value.trim(),
           email:     el['sig-email'].value.trim(),
           website:   el['sig-website'].value.trim(),
+          meeting:   el['sig-meeting'].value.trim(),
           logo:      el['sig-logo'].value.trim(),
           font:      el['sig-font'].value,
           color:     el['sig-color'].value,
@@ -673,8 +678,9 @@
         var hasPhone   = !!v.phone;
         var hasEmail   = !!v.email;
         var hasWebsite = !!v.website;
+        var hasMeeting = !!v.meeting;
         var hasIdentity = hasName || hasTitle || hasCompany;
-        var hasContact  = hasPhone || hasEmail || hasWebsite;
+        var hasContact  = hasPhone || hasEmail || hasWebsite || hasMeeting;
 
         var socials = [];
         if (v.linkedin)  socials.push({ url: v.linkedin,  icon: ICONS.linkedin,  alt: 'LinkedIn' });
@@ -727,6 +733,7 @@
           if (hasPhone) contactRows.push('phone');
           if (hasEmail) contactRows.push('email');
           if (hasWebsite) contactRows.push('website');
+          if (hasMeeting) contactRows.push('meeting');
 
           contactRows.forEach(function (type, i) {
             var isLast = i === contactRows.length - 1;
@@ -741,10 +748,14 @@
               label = 'E';
               href = 'mailto:' + escAttr(v.email);
               text = v.email;
-            } else {
+            } else if (type === 'website') {
               label = 'W';
               href = escAttr(addProto(v.website));
               text = stripProto(v.website);
+            } else {
+              label = 'C';
+              href = escAttr(addProto(v.meeting));
+              text = stripProto(v.meeting);
             }
 
             h += '<tr>';
@@ -809,7 +820,7 @@
       // ============= EVENT LISTENERS =============
       var textInputs = [
         'sig-name', 'sig-title', 'sig-company',
-        'sig-phone', 'sig-email', 'sig-website',
+        'sig-phone', 'sig-email', 'sig-website', 'sig-meeting',
         'sig-logo',
         'sig-linkedin', 'sig-twitter', 'sig-facebook', 'sig-instagram', 'sig-github',
         'sig-disclaimer'
