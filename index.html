@@ -697,11 +697,16 @@
         var hasContact  = hasPhone || hasEmail || hasWebsite || hasMeeting;
 
         var socials = [];
-        if (v.linkedin)  socials.push({ url: v.linkedin,  icon: ICONS.linkedin,  alt: 'LinkedIn' });
-        if (v.twitter)   socials.push({ url: v.twitter,   icon: ICONS.twitter,   alt: 'Twitter' });
-        if (v.facebook)  socials.push({ url: v.facebook,  icon: ICONS.facebook,  alt: 'Facebook' });
-        if (v.instagram) socials.push({ url: v.instagram, icon: ICONS.instagram, alt: 'Instagram' });
-        if (v.github)    socials.push({ url: v.github,    icon: ICONS.github,    alt: 'GitHub' });
+        var networks = [
+          { id: 'linkedin', alt: 'LinkedIn' },
+          { id: 'twitter', alt: 'Twitter' },
+          { id: 'facebook', alt: 'Facebook' },
+          { id: 'instagram', alt: 'Instagram' },
+          { id: 'github', alt: 'GitHub' }
+        ];
+        networks.forEach(function(net) {
+          if (v[net.id]) socials.push({ url: v[net.id], icon: ICONS[net.id], alt: net.alt });
+        });
         var hasSocials = socials.length > 0;
 
         var hasDisclaimer = v.showDisclaimer && v.disclaimer;
