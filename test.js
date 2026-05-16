@@ -1,3 +1,4 @@
+
 const fs = require('node:fs');
 const test = require('node:test');
 const assert = require('node:assert');
@@ -95,6 +96,20 @@ test('application logic', async (t) => {
   });
 
   await t.test('Utility: sanitizePhone()', () => {
+    // Happy paths
+    assert.strictEqual(helpers.sanitizePhone('+1 (555) 123-4567'), '+15551234567');
+    assert.strictEqual(helpers.sanitizePhone('555-123-4567'), '5551234567');
+    assert.strictEqual(helpers.sanitizePhone('555 123 4567'), '5551234567');
+    assert.strictEqual(helpers.sanitizePhone('5551234567'), '5551234567');
+
+    // Edge cases
+    assert.strictEqual(helpers.sanitizePhone(''), '');
+    assert.strictEqual(helpers.sanitizePhone('   '), '');
+    assert.strictEqual(helpers.sanitizePhone('555-123-4567 ext 123'), '5551234567123');
+    assert.strictEqual(helpers.sanitizePhone('!@#$%^&*()_+-=[]{}|;:",.<>/?~`'), '+');
+    assert.strictEqual(helpers.sanitizePhone('++11 555'), '++11555');
+    assert.strictEqual(helpers.sanitizePhone('55+51'), '55+51');
+    assert.strictEqual(helpers.sanitizePhone('phone number'), '');
     assert.strictEqual(helpers.sanitizePhone('(123) 456-7890'), '1234567890');
     assert.strictEqual(helpers.sanitizePhone('+1 234 567 8900'), '+12345678900');
     assert.strictEqual(helpers.sanitizePhone('abc 123'), '123');
