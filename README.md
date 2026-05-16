@@ -59,6 +59,14 @@ Just serve `index.html` from any web server or CDN. It's a single file with no b
 
 The default field values in `index.html` showcase the creator's details as an example. To set your own defaults, edit the `value="..."` attributes on the form inputs near the top of the file.
 
+## Testing
+
+This project uses the built-in Node.js test runner for unit testing the application logic without the overhead of complex frameworks.
+
+To run the tests:
+1. Ensure you have [Node.js](https://nodejs.org/) installed (v20+ recommended).
+2. Run `node --test test.js` in the terminal.
+
 ## Contributing
 
 Contributions are welcome! Feel free to open an issue or submit a pull request. Some ideas:
