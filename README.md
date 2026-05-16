@@ -38,13 +38,13 @@ A free, open-source tool for creating professional HTML email signatures. No sig
 ### Docker
 
 ```bash
-docker run -d -p 8080:80 ghcr.io/clarkemedia/email-signature-generator:latest
+docker run -d -p 8080:80 ghcr.io/louis-eyond/email-signature-generator:latest
 ```
 
 Or with Docker Compose:
 
 ```bash
-git clone https://github.com/clarkemedia/email-signature-generator.git
+git clone https://github.com/louis-eyond/email-signature-generator.git
 cd email-signature-generator
 docker compose up -d
 ```
