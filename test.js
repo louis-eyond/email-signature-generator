@@ -16,7 +16,7 @@ test('application logic', async (t) => {
   const testCode = scriptContent + `
     module.exports = {
       esc, escAttr, stripProto, addProto, sanitizePhone,
-      getValues, render, defaults
+      getValues, render, defaults, flash
     };
   `;
 
@@ -60,13 +60,19 @@ test('application logic', async (t) => {
     querySelectorAll: () => ([]),
   };
 
+  const mockTimeouts = [];
   const context = {
     document: mockDocument,
     window: { ClipboardItem: function(){} },
     navigator: { clipboard: { write: () => {} } },
     FileReader: function() {},
+    setTimeout: (cb, delay) => {
+      mockTimeouts.push({ cb, delay });
+      return mockTimeouts.length;
+    },
     console: console,
-    module: {}
+    module: {},
+    mockTimeouts: mockTimeouts // Expose for testing
   };
 
   vm.createContext(context);
@@ -141,5 +147,38 @@ test('application logic', async (t) => {
     const preview = domElements['sig-preview'];
     assert.ok(!preview.innerHTML.includes('Fill in the form above'));
     assert.ok(preview.innerHTML.includes('Test User'));
+  });
+
+  await t.test('UI: flash() provides visual feedback and resets', () => {
+    // Clear previous timeouts if any
+    context.mockTimeouts.length = 0;
+
+    const btn = {
+      textContent: 'Original',
+      classList: {
+        classes: new Set(),
+        add: function(cls) { this.classes.add(cls); },
+        remove: function(cls) { this.classes.delete(cls); },
+        contains: function(cls) { return this.classes.has(cls); }
+      }
+    };
+
+    helpers.flash(btn, 'Original', 'Copied!');
+
+    // Check immediate state
+    assert.strictEqual(btn.textContent, 'Copied!');
+    assert.ok(btn.classList.contains('copied'));
+
+    // Check setTimeout was called with 1800ms
+    assert.strictEqual(context.mockTimeouts.length, 1);
+    const timeout = context.mockTimeouts[0];
+    assert.strictEqual(timeout.delay, 1800);
+
+    // Execute the callback
+    timeout.cb();
+
+    // Check restored state
+    assert.strictEqual(btn.textContent, 'Original');
+    assert.ok(!btn.classList.contains('copied'));
   });
 });
