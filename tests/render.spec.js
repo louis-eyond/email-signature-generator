@@ -36,14 +36,14 @@ test.describe('Signature Generator Render Tests', () => {
     const previewLocator = page.locator('#sig-preview');
 
     // The initial state should have a phone link (tel:8667958386)
-    // Actually the phone number in the default is (866)795-8386
-    await expect(previewLocator).toContainText('(866)795-8386');
+    // Actually the phone number in the default is (866) 795-8386
+    await expect(previewLocator).toContainText('(866) 795-8386');
 
     // Clear the phone input
     await phoneInput.fill('');
 
     // Verify the phone number is removed from the preview
-    await expect(previewLocator).not.toContainText('(866)795-8386');
+    await expect(previewLocator).not.toContainText('(866) 795-8386');
   });
 
   test('Disclaimer Toggle removes disclaimer from preview', async ({ page }) => {
