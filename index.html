@@ -599,10 +599,10 @@
   <script>
     (function () {
       // ============= HELPERS =============
+      var _escDiv = document.createElement('div');
       function esc(str) {
-        var d = document.createElement('div');
-        d.textContent = str;
-        return d.innerHTML;
+        _escDiv.textContent = str;
+        return _escDiv.innerHTML;
       }
 
       function escAttr(str) {
