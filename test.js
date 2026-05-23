@@ -142,4 +142,46 @@ test('application logic', async (t) => {
     assert.ok(!preview.innerHTML.includes('Fill in the form above'));
     assert.ok(preview.innerHTML.includes('Test User'));
   });
+
+  await t.test('Logic: render() generates signature with all fields populated', () => {
+    // Populate all fields
+    domElements['sig-name'].value = 'Full Name';
+    domElements['sig-title'].value = 'CEO';
+    domElements['sig-company'].value = 'Corp';
+    domElements['sig-phone'].value = '555-1234';
+    domElements['sig-email'].value = 'test@example.com';
+    domElements['sig-website'].value = 'https://example.com';
+    domElements['sig-meeting'].value = 'https://cal.com/test';
+    domElements['sig-logo'].value = 'https://example.com/logo.png';
+    domElements['sig-font'].value = 'Arial';
+    domElements['sig-color'].value = '#ff0000';
+    domElements['sig-linkedin'].value = 'https://linkedin.com/in/test';
+    domElements['sig-twitter'].value = 'https://twitter.com/test';
+    domElements['sig-facebook'].value = 'https://facebook.com/test';
+    domElements['sig-instagram'].value = 'https://instagram.com/test';
+    domElements['sig-github'].value = 'https://github.com/test';
+    domElements['sig-disclaimer-toggle'].checked = true;
+    domElements['sig-disclaimer'].value = 'Test disclaimer.';
+
+    helpers.render();
+
+    const preview = domElements['sig-preview'];
+    const html = preview.innerHTML;
+
+    assert.ok(!html.includes('Fill in the form above'));
+    assert.ok(html.includes('Full Name'));
+    assert.ok(html.includes('CEO'));
+    assert.ok(html.includes('Corp'));
+    assert.ok(html.includes('5551234')); // sanitized phone
+    assert.ok(html.includes('test@example.com'));
+    assert.ok(html.includes('example.com')); // stripped proto
+    assert.ok(html.includes('cal.com/test')); // stripped proto
+    assert.ok(html.includes('logo.png'));
+    assert.ok(html.includes('linkedin.com'));
+    assert.ok(html.includes('twitter.com'));
+    assert.ok(html.includes('facebook.com'));
+    assert.ok(html.includes('instagram.com'));
+    assert.ok(html.includes('github.com'));
+    assert.ok(html.includes('Test disclaimer.'));
+  });
 });
