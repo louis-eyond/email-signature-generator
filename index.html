@@ -599,6 +599,14 @@
   <script>
     (function () {
       // ============= HELPERS =============
+      var ESC_MAP = {
+        '&': '&amp;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '<': '&lt;',
+        '>': '&gt;'
+      };
+
       function esc(str) {
         var d = document.createElement('div');
         d.textContent = str;
@@ -606,7 +614,9 @@
       }
 
       function escAttr(str) {
-        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return str.replace(/[&"'<>]/g, function (c) {
+          return ESC_MAP[c];
+        });
       }
 
       function stripProto(url) {
