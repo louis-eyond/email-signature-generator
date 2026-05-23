@@ -66,7 +66,8 @@ test('application logic', async (t) => {
     navigator: { clipboard: { write: () => {} } },
     FileReader: function() {},
     console: console,
-    module: {}
+    module: {},
+    DOMPurify: { sanitize: (html) => html }
   };
 
   vm.createContext(context);
