@@ -1,0 +1,2 @@
+Render time: 0.04428 ms/iter
+Operations per second: 22585 ops/sec
