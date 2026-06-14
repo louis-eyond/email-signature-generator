@@ -72,7 +72,7 @@ test('application logic', async (t) => {
     },
     console: console,
     module: {},
-    DOMPurify: { sanitize: (html) => html }
+    DOMPurify: { sanitize: (html) => html },
     mockTimeouts: mockTimeouts // Expose for testing
   };
 
@@ -190,6 +190,8 @@ test('application logic', async (t) => {
     assert.ok(html.includes('instagram.com'));
     assert.ok(html.includes('github.com'));
     assert.ok(html.includes('Test disclaimer.'));
+  });
+
   await t.test('UI: flash() provides visual feedback and resets', () => {
     // Clear previous timeouts if any
     context.mockTimeouts.length = 0;
