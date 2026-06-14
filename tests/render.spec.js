@@ -37,6 +37,7 @@ test.describe('Signature Generator Render Tests', () => {
 
     // The initial state should have a phone link (tel:8667958386)
     // Actually the phone number in the default is (866) 795-8386
+    // Actually the phone number in the default is (866)795-8386
     await expect(previewLocator).toContainText('(866) 795-8386');
 
     // Clear the phone input

@@ -32,7 +32,7 @@ module.exports = defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'python3 -m http.server 3000 --bind 0.0.0.0',
+    command: 'python3 -m http.server 3000 --bind 127.0.0.1',
     url: 'http://127.0.0.1:3000',
     reuseExistingServer: !process.env.CI,
   },
