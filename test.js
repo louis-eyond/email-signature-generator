@@ -72,6 +72,7 @@ test('application logic', async (t) => {
     },
     console: console,
     module: {},
+    DOMPurify: { sanitize: (html) => html }
     mockTimeouts: mockTimeouts // Expose for testing
   };
 
