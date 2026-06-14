@@ -62,37 +62,97 @@ test.describe('Signature Generator Render Tests', () => {
     await expect(previewLocator).not.toContainText('Important:');
   });
 
-  test('Reset Button restores default values', async ({ page }) => {
-    const nameInput = page.locator('#sig-name');
-    const companyInput = page.locator('#sig-company');
+  test('Reset Button restores all default values', async ({ page }) => {
+    // 1. Identify all interactive input IDs based on the IDs used in the application
+    const inputIds = [
+      'sig-name', 'sig-title', 'sig-company',
+      'sig-phone', 'sig-email', 'sig-website', 'sig-meeting',
+      'sig-logo', 'sig-font', 'sig-color', 'sig-color-hex',
+      'sig-linkedin', 'sig-twitter', 'sig-facebook', 'sig-instagram', 'sig-github',
+      'sig-disclaimer-toggle', 'sig-disclaimer'
+    ];
+
     const previewLocator = page.locator('#sig-preview');
     const resetBtn = page.locator('#reset-btn');
 
-    // Default values
-    const defaultName = 'Louis Lavin';
-    const defaultCompany = 'EYOND, Inc.';
+    // 2. Capture the initial state of all inputs and the preview
+    const initialValues = {};
+    for (const id of inputIds) {
+      const locator = page.locator(`#${id}`);
+      const type = await locator.evaluate(el => el.type);
+      if (type === 'checkbox') {
+        initialValues[id] = await locator.isChecked();
+      } else {
+        initialValues[id] = await locator.inputValue();
+      }
+    }
+    const initialPreviewHTML = await previewLocator.innerHTML();
 
-    // Change input fields
-    await nameInput.fill('John Doe');
-    await companyInput.fill('Acme Corp');
+    // 3. Modify every single field
+    const testValues = {
+      'sig-name': 'Test Name',
+      'sig-title': 'Test Title',
+      'sig-company': 'Test Company',
+      'sig-phone': '123-456-7890',
+      'sig-email': 'test@example.com',
+      'sig-website': 'https://test.com',
+      'sig-meeting': 'https://meet.test.com',
+      'sig-logo': 'https://test.com/logo.png',
+      'sig-font': 'Courier New, Courier, monospace',
+      'sig-color': '#ff0000',
+      'sig-color-hex': '#ff0000',
+      'sig-linkedin': 'https://linkedin.com/test',
+      'sig-twitter': 'https://twitter.com/test',
+      'sig-facebook': 'https://facebook.com/test',
+      'sig-instagram': 'https://instagram.com/test',
+      'sig-github': 'https://github.com/test',
+      'sig-disclaimer-toggle': !initialValues['sig-disclaimer-toggle'],
+      'sig-disclaimer': 'Test disclaimer'
+    };
 
-    // Verify changes are reflected
-    await expect(previewLocator).toContainText('John Doe');
-    await expect(previewLocator).toContainText('Acme Corp');
-    await expect(nameInput).toHaveValue('John Doe');
-    await expect(companyInput).toHaveValue('Acme Corp');
+    for (const id of inputIds) {
+      const locator = page.locator(`#${id}`);
+      const type = await locator.evaluate(el => el.type);
 
-    // Click reset button
+      // If we unchecked the disclaimer toggle, the disclaimer field is hidden.
+      // Make sure the disclaimer field is visible before we fill it,
+      // or we handle the order correctly by avoiding filling it if it's hidden.
+      if (id === 'sig-disclaimer') {
+        const isVisible = await locator.isVisible();
+        if (isVisible) {
+          await locator.fill(testValues[id]);
+        }
+      } else if (type === 'checkbox') {
+        if (testValues[id] !== initialValues[id]) {
+          await locator.click(); // Toggle it
+        }
+      } else if (type === 'select-one') {
+        await locator.selectOption({ label: 'Courier New' });
+      } else {
+        await locator.fill(testValues[id]);
+      }
+    }
+
+    // Verify at least one change applied successfully
+    await expect(page.locator('#sig-name')).toHaveValue('Test Name');
+
+    // 4. Click the #reset-btn
     await resetBtn.click();
 
-    // Verify the fields are restored to defaults
-    await expect(nameInput).toHaveValue(defaultName);
-    await expect(companyInput).toHaveValue(defaultCompany);
+    // 5. Assert all fields match their original defaults
+    for (const id of inputIds) {
+      const locator = page.locator(`#${id}`);
+      const type = await locator.evaluate(el => el.type);
+      if (type === 'checkbox') {
+        const isChecked = await locator.isChecked();
+        expect(isChecked).toBe(initialValues[id]);
+      } else {
+        await expect(locator).toHaveValue(initialValues[id]);
+      }
+    }
 
-    // Verify the preview reflects defaults
-    await expect(previewLocator).toContainText(defaultName);
-    await expect(previewLocator).toContainText(defaultCompany);
-    await expect(previewLocator).not.toContainText('John Doe');
-    await expect(previewLocator).not.toContainText('Acme Corp');
+    // 6. Assert the preview HTML matches the initial default preview HTML
+    const finalPreviewHTML = await previewLocator.innerHTML();
+    expect(finalPreviewHTML).toBe(initialPreviewHTML);
   });
 });
