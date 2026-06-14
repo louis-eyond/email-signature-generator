@@ -25,7 +25,8 @@ test('application logic', async (t) => {
   const createClassListMock = () => ({
     classes: new Set(),
     add: function(cls) { this.classes.add(cls); },
-    remove: function(cls) { this.classes.delete(cls); }
+    remove: function(cls) { this.classes.delete(cls); },
+    contains: function(cls) { return this.classes.has(cls); }
   });
 
   const mockDocument = {
