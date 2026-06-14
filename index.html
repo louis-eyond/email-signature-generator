@@ -808,7 +808,7 @@
             socials.forEach(function (s, i) {
               var pr = i < socials.length - 1 ? '8' : '0';
               h += '<td style="padding-right: ' + pr + 'px; line-height: 0;">';
-              h += '<a href="' + escAttr(addProto(s.url)) + '" target="_blank" style="display: inline-block; text-decoration: none; line-height: 0;">';
+              h += '<a href="' + escAttr(addProto(s.url)) + '" target="_blank" rel="noopener noreferrer" style="display: inline-block; text-decoration: none; line-height: 0;">';
               h += '<img src="' + escAttr(s.icon) + '" alt="' + escAttr(s.alt) + '" width="26" height="26" style="display: block; width: 26px; height: 26px; border: 0;" />';
               h += '</a></td>';
             });
