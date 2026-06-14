@@ -25,7 +25,8 @@ test('application logic', async (t) => {
   const createClassListMock = () => ({
     classes: new Set(),
     add: function(cls) { this.classes.add(cls); },
-    remove: function(cls) { this.classes.delete(cls); }
+    remove: function(cls) { this.classes.delete(cls); },
+    contains: function(cls) { return this.classes.has(cls); }
   });
 
   const mockDocument = {
@@ -50,7 +51,12 @@ test('application logic', async (t) => {
         domElements[id] = {
           value: '',
           checked: false,
-          addEventListener: () => {},
+          listeners: {},
+          addEventListener: function(event, cb) {
+            if (!this.listeners[event]) this.listeners[event] = [];
+            this.listeners[event].push(cb);
+          },
+          querySelector: () => null,
           style: {},
           classList: createClassListMock()
         };
@@ -72,7 +78,7 @@ test('application logic', async (t) => {
     },
     console: console,
     module: {},
-    DOMPurify: { sanitize: (html) => html }
+    DOMPurify: { sanitize: (html) => html },
     mockTimeouts: mockTimeouts // Expose for testing
   };
 
@@ -190,6 +196,7 @@ test('application logic', async (t) => {
     assert.ok(html.includes('instagram.com'));
     assert.ok(html.includes('github.com'));
     assert.ok(html.includes('Test disclaimer.'));
+  });
   await t.test('UI: flash() provides visual feedback and resets', () => {
     // Clear previous timeouts if any
     context.mockTimeouts.length = 0;
@@ -221,5 +228,70 @@ test('application logic', async (t) => {
     // Check restored state
     assert.strictEqual(btn.textContent, 'Original');
     assert.ok(!btn.classList.contains('copied'));
+  });
+
+  await t.test('Logic: HTML copy fallback correctly invokes textarea and execCommand', async () => {
+    // Clear previous timeouts if any
+    context.mockTimeouts.length = 0;
+
+    let execCommandCalledWith = null;
+    let appendedChildren = [];
+    let removedChildren = [];
+    let textareaSelected = false;
+
+    // Enhance document mock for this specific test
+    const originalExecCommand = context.document.execCommand;
+    const originalAppendChild = context.document.body ? context.document.body.appendChild : null;
+    const originalRemoveChild = context.document.body ? context.document.body.removeChild : null;
+    const originalCreateElement = context.document.createElement;
+
+    context.document.execCommand = (cmd) => { execCommandCalledWith = cmd; };
+    if (!context.document.body) context.document.body = {};
+    context.document.body.appendChild = (child) => { appendedChildren.push(child); };
+    context.document.body.removeChild = (child) => { removedChildren.push(child); };
+
+    // We need to return a textarea with a select() method when 'textarea' is created
+    context.document.createElement = (tag) => {
+      if (tag === 'textarea') {
+        return {
+          value: '',
+          style: {},
+          select: () => { textareaSelected = true; }
+        };
+      }
+      return originalCreateElement(tag);
+    };
+
+    // Mock clipboard.writeText to fail
+    context.navigator.clipboard.writeText = async () => { throw new Error("Clipboard error"); };
+
+    // Find the html button and simulate click
+    const htmlBtn = domElements['copy-html'];
+    const preview = domElements['sig-preview'];
+
+    // Need something valid in preview so it doesn't return early
+    preview._textContent = '<div>Valid HTML</div>';
+
+    // Execute the click event listener
+    if (htmlBtn && htmlBtn.listeners && htmlBtn.listeners['click']) {
+      await htmlBtn.listeners['click'][0]();
+    }
+
+    // Verify fallback behavior
+    assert.strictEqual(execCommandCalledWith, 'copy', 'execCommand("copy") should be called in fallback');
+    assert.strictEqual(appendedChildren.length, 1, 'textarea should be appended to body');
+    assert.strictEqual(removedChildren.length, 1, 'textarea should be removed from body');
+    assert.strictEqual(appendedChildren[0], removedChildren[0], 'appended and removed element should be the same');
+    assert.ok(textareaSelected, 'textarea content should be selected');
+
+    // Verify flash was called by checking timeouts and classList
+    assert.strictEqual(htmlBtn.textContent, 'Copied!');
+    assert.ok(htmlBtn.classList.contains('copied'));
+
+    // Restore mocks
+    context.document.execCommand = originalExecCommand;
+    context.document.body.appendChild = originalAppendChild;
+    context.document.body.removeChild = originalRemoveChild;
+    context.document.createElement = originalCreateElement;
   });
 });
