@@ -50,7 +50,11 @@ test('application logic', async (t) => {
         domElements[id] = {
           value: '',
           checked: false,
-          addEventListener: () => {},
+          querySelector: () => null,
+          listeners: {},
+          addEventListener: function(evt, cb) {
+            this.listeners[evt] = cb;
+          },
           style: {},
           classList: createClassListMock()
         };
@@ -58,14 +62,24 @@ test('application logic', async (t) => {
       return domElements[id];
     },
     querySelectorAll: () => ([]),
+    execCommand: () => true,
+    body: {
+      appendChild: () => {},
+      removeChild: () => {}
+    },
+    createRange: () => ({ selectNode: () => {} }),
+    getSelection: () => ({ removeAllRanges: () => {}, addRange: () => {} })
   };
 
   const mockTimeouts = [];
   const context = {
     document: mockDocument,
-    window: { ClipboardItem: function(){} },
+    window: { ClipboardItem: function(){}, getSelection: () => ({ removeAllRanges: () => {}, addRange: () => {} }) },
     navigator: { clipboard: { write: () => {} } },
     FileReader: function() {},
+    alert: (msg) => {
+      context.alertMessages.push(msg);
+    },
     setTimeout: (cb, delay) => {
       mockTimeouts.push({ cb, delay });
       return mockTimeouts.length;
@@ -73,7 +87,8 @@ test('application logic', async (t) => {
     console: console,
     module: {},
     DOMPurify: { sanitize: (html) => html },
-    mockTimeouts: mockTimeouts // Expose for testing
+    mockTimeouts: mockTimeouts, 
+    alertMessages: [] // Expose for testing
   };
 
   vm.createContext(context);
@@ -223,5 +238,35 @@ test('application logic', async (t) => {
     // Check restored state
     assert.strictEqual(btn.textContent, 'Original');
     assert.ok(!btn.classList.contains('copied'));
+  });
+  await t.test('Logic: copy failure fallback alerts user', async () => {
+    // We want to trigger the "try/catch" for `execCommand('copy')` in `richBtn`
+    const copyBtn = domElements['copy-rich'];
+    // clear alert messages
+    context.alertMessages.length = 0;
+
+    // Make execCommand throw
+    const originalExecCommand = mockDocument.execCommand;
+    mockDocument.execCommand = () => { throw new Error('Simulated execCommand error'); };
+
+    // Make sure we bypass the navigator.clipboard API for this test
+    const originalClipboard = context.navigator.clipboard;
+    context.navigator.clipboard = null;
+
+    // Render something to copy
+    domElements['sig-name'].value = 'Test';
+    helpers.render();
+
+    // Click the button
+    if (copyBtn.listeners && copyBtn.listeners.click) {
+      await copyBtn.listeners.click();
+    }
+
+    assert.strictEqual(context.alertMessages.length, 1);
+    assert.strictEqual(context.alertMessages[0], 'Copy failed — please select the signature manually and copy it.');
+
+    // Restore mocks
+    mockDocument.execCommand = originalExecCommand;
+    context.navigator.clipboard = originalClipboard;
   });
 });
