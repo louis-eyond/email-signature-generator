@@ -51,12 +51,11 @@ test('application logic', async (t) => {
         domElements[id] = {
           value: '',
           checked: false,
-          listeners: {},
-          addEventListener: function(event, cb) {
-            if (!this.listeners[event]) this.listeners[event] = [];
-            this.listeners[event].push(cb);
-          },
           querySelector: () => null,
+          listeners: {},
+          addEventListener: function(evt, cb) {
+            this.listeners[evt] = cb;
+          },
           style: {},
           classList: createClassListMock()
         };
@@ -64,14 +63,24 @@ test('application logic', async (t) => {
       return domElements[id];
     },
     querySelectorAll: () => ([]),
+    execCommand: () => true,
+    body: {
+      appendChild: () => {},
+      removeChild: () => {}
+    },
+    createRange: () => ({ selectNode: () => {} }),
+    getSelection: () => ({ removeAllRanges: () => {}, addRange: () => {} })
   };
 
   const mockTimeouts = [];
   const context = {
     document: mockDocument,
-    window: { ClipboardItem: function(){} },
+    window: { ClipboardItem: function(){}, getSelection: () => ({ removeAllRanges: () => {}, addRange: () => {} }) },
     navigator: { clipboard: { write: () => {} } },
     FileReader: function() {},
+    alert: (msg) => {
+      context.alertMessages.push(msg);
+    },
     setTimeout: (cb, delay) => {
       mockTimeouts.push({ cb, delay });
       return mockTimeouts.length;
@@ -79,7 +88,8 @@ test('application logic', async (t) => {
     console: console,
     module: {},
     DOMPurify: { sanitize: (html) => html },
-    mockTimeouts: mockTimeouts // Expose for testing
+    mockTimeouts: mockTimeouts, 
+    alertMessages: [] // Expose for testing
   };
 
   vm.createContext(context);
@@ -197,6 +207,7 @@ test('application logic', async (t) => {
     assert.ok(html.includes('github.com'));
     assert.ok(html.includes('Test disclaimer.'));
   });
+
   await t.test('UI: flash() provides visual feedback and resets', () => {
     // Clear previous timeouts if any
     context.mockTimeouts.length = 0;
@@ -229,69 +240,34 @@ test('application logic', async (t) => {
     assert.strictEqual(btn.textContent, 'Original');
     assert.ok(!btn.classList.contains('copied'));
   });
+  await t.test('Logic: copy failure fallback alerts user', async () => {
+    // We want to trigger the "try/catch" for `execCommand('copy')` in `richBtn`
+    const copyBtn = domElements['copy-rich'];
+    // clear alert messages
+    context.alertMessages.length = 0;
 
-  await t.test('Logic: HTML copy fallback correctly invokes textarea and execCommand', async () => {
-    // Clear previous timeouts if any
-    context.mockTimeouts.length = 0;
+    // Make execCommand throw
+    const originalExecCommand = mockDocument.execCommand;
+    mockDocument.execCommand = () => { throw new Error('Simulated execCommand error'); };
 
-    let execCommandCalledWith = null;
-    let appendedChildren = [];
-    let removedChildren = [];
-    let textareaSelected = false;
+    // Make sure we bypass the navigator.clipboard API for this test
+    const originalClipboard = context.navigator.clipboard;
+    context.navigator.clipboard = null;
 
-    // Enhance document mock for this specific test
-    const originalExecCommand = context.document.execCommand;
-    const originalAppendChild = context.document.body ? context.document.body.appendChild : null;
-    const originalRemoveChild = context.document.body ? context.document.body.removeChild : null;
-    const originalCreateElement = context.document.createElement;
+    // Render something to copy
+    domElements['sig-name'].value = 'Test';
+    helpers.render();
 
-    context.document.execCommand = (cmd) => { execCommandCalledWith = cmd; };
-    if (!context.document.body) context.document.body = {};
-    context.document.body.appendChild = (child) => { appendedChildren.push(child); };
-    context.document.body.removeChild = (child) => { removedChildren.push(child); };
-
-    // We need to return a textarea with a select() method when 'textarea' is created
-    context.document.createElement = (tag) => {
-      if (tag === 'textarea') {
-        return {
-          value: '',
-          style: {},
-          select: () => { textareaSelected = true; }
-        };
-      }
-      return originalCreateElement(tag);
-    };
-
-    // Mock clipboard.writeText to fail
-    context.navigator.clipboard.writeText = async () => { throw new Error("Clipboard error"); };
-
-    // Find the html button and simulate click
-    const htmlBtn = domElements['copy-html'];
-    const preview = domElements['sig-preview'];
-
-    // Need something valid in preview so it doesn't return early
-    preview._textContent = '<div>Valid HTML</div>';
-
-    // Execute the click event listener
-    if (htmlBtn && htmlBtn.listeners && htmlBtn.listeners['click']) {
-      await htmlBtn.listeners['click'][0]();
+    // Click the button
+    if (copyBtn.listeners && copyBtn.listeners.click) {
+      await copyBtn.listeners.click();
     }
 
-    // Verify fallback behavior
-    assert.strictEqual(execCommandCalledWith, 'copy', 'execCommand("copy") should be called in fallback');
-    assert.strictEqual(appendedChildren.length, 1, 'textarea should be appended to body');
-    assert.strictEqual(removedChildren.length, 1, 'textarea should be removed from body');
-    assert.strictEqual(appendedChildren[0], removedChildren[0], 'appended and removed element should be the same');
-    assert.ok(textareaSelected, 'textarea content should be selected');
-
-    // Verify flash was called by checking timeouts and classList
-    assert.strictEqual(htmlBtn.textContent, 'Copied!');
-    assert.ok(htmlBtn.classList.contains('copied'));
+    assert.strictEqual(context.alertMessages.length, 1);
+    assert.strictEqual(context.alertMessages[0], 'Copy failed — please select the signature manually and copy it.');
 
     // Restore mocks
-    context.document.execCommand = originalExecCommand;
-    context.document.body.appendChild = originalAppendChild;
-    context.document.body.removeChild = originalRemoveChild;
-    context.document.createElement = originalCreateElement;
+    mockDocument.execCommand = originalExecCommand;
+    context.navigator.clipboard = originalClipboard;
   });
 });
