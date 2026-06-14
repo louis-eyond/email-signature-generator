@@ -658,6 +658,14 @@
         github:    'https://img.icons8.com/fluency/48/github.png'
       };
 
+      var networks = [
+        { id: 'linkedin', alt: 'LinkedIn' },
+        { id: 'twitter', alt: 'Twitter' },
+        { id: 'facebook', alt: 'Facebook' },
+        { id: 'instagram', alt: 'Instagram' },
+        { id: 'github', alt: 'GitHub' }
+      ];
+
       // ============= RENDER =============
       function getValues() {
         return {
@@ -698,13 +706,6 @@
         var hasContact  = hasPhone || hasEmail || hasWebsite || hasMeeting;
 
         var socials = [];
-        var networks = [
-          { id: 'linkedin', alt: 'LinkedIn' },
-          { id: 'twitter', alt: 'Twitter' },
-          { id: 'facebook', alt: 'Facebook' },
-          { id: 'instagram', alt: 'Instagram' },
-          { id: 'github', alt: 'GitHub' }
-        ];
         networks.forEach(function(net) {
           if (v[net.id]) socials.push({ url: v[net.id], icon: ICONS[net.id], alt: net.alt });
         });

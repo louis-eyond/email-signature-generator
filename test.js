@@ -16,7 +16,7 @@ test('application logic', async (t) => {
   const testCode = scriptContent + `
     module.exports = {
       esc, escAttr, stripProto, addProto, sanitizePhone,
-      getValues, render, defaults
+      getValues, render, defaults, flash
     };
   `;
 
@@ -60,14 +60,20 @@ test('application logic', async (t) => {
     querySelectorAll: () => ([]),
   };
 
+  const mockTimeouts = [];
   const context = {
     document: mockDocument,
     window: { ClipboardItem: function(){} },
     navigator: { clipboard: { write: () => {} } },
     FileReader: function() {},
+    setTimeout: (cb, delay) => {
+      mockTimeouts.push({ cb, delay });
+      return mockTimeouts.length;
+    },
     console: console,
     module: {},
     DOMPurify: { sanitize: (html) => html }
+    mockTimeouts: mockTimeouts // Expose for testing
   };
 
   vm.createContext(context);
@@ -142,5 +148,78 @@ test('application logic', async (t) => {
     const preview = domElements['sig-preview'];
     assert.ok(!preview.innerHTML.includes('Fill in the form above'));
     assert.ok(preview.innerHTML.includes('Test User'));
+  });
+
+  await t.test('Logic: render() generates signature with all fields populated', () => {
+    // Populate all fields
+    domElements['sig-name'].value = 'Full Name';
+    domElements['sig-title'].value = 'CEO';
+    domElements['sig-company'].value = 'Corp';
+    domElements['sig-phone'].value = '555-1234';
+    domElements['sig-email'].value = 'test@example.com';
+    domElements['sig-website'].value = 'https://example.com';
+    domElements['sig-meeting'].value = 'https://cal.com/test';
+    domElements['sig-logo'].value = 'https://example.com/logo.png';
+    domElements['sig-font'].value = 'Arial';
+    domElements['sig-color'].value = '#ff0000';
+    domElements['sig-linkedin'].value = 'https://linkedin.com/in/test';
+    domElements['sig-twitter'].value = 'https://twitter.com/test';
+    domElements['sig-facebook'].value = 'https://facebook.com/test';
+    domElements['sig-instagram'].value = 'https://instagram.com/test';
+    domElements['sig-github'].value = 'https://github.com/test';
+    domElements['sig-disclaimer-toggle'].checked = true;
+    domElements['sig-disclaimer'].value = 'Test disclaimer.';
+
+    helpers.render();
+
+    const preview = domElements['sig-preview'];
+    const html = preview.innerHTML;
+
+    assert.ok(!html.includes('Fill in the form above'));
+    assert.ok(html.includes('Full Name'));
+    assert.ok(html.includes('CEO'));
+    assert.ok(html.includes('Corp'));
+    assert.ok(html.includes('5551234')); // sanitized phone
+    assert.ok(html.includes('test@example.com'));
+    assert.ok(html.includes('example.com')); // stripped proto
+    assert.ok(html.includes('cal.com/test')); // stripped proto
+    assert.ok(html.includes('logo.png'));
+    assert.ok(html.includes('linkedin.com'));
+    assert.ok(html.includes('twitter.com'));
+    assert.ok(html.includes('facebook.com'));
+    assert.ok(html.includes('instagram.com'));
+    assert.ok(html.includes('github.com'));
+    assert.ok(html.includes('Test disclaimer.'));
+  await t.test('UI: flash() provides visual feedback and resets', () => {
+    // Clear previous timeouts if any
+    context.mockTimeouts.length = 0;
+
+    const btn = {
+      textContent: 'Original',
+      classList: {
+        classes: new Set(),
+        add: function(cls) { this.classes.add(cls); },
+        remove: function(cls) { this.classes.delete(cls); },
+        contains: function(cls) { return this.classes.has(cls); }
+      }
+    };
+
+    helpers.flash(btn, 'Original', 'Copied!');
+
+    // Check immediate state
+    assert.strictEqual(btn.textContent, 'Copied!');
+    assert.ok(btn.classList.contains('copied'));
+
+    // Check setTimeout was called with 1800ms
+    assert.strictEqual(context.mockTimeouts.length, 1);
+    const timeout = context.mockTimeouts[0];
+    assert.strictEqual(timeout.delay, 1800);
+
+    // Execute the callback
+    timeout.cb();
+
+    // Check restored state
+    assert.strictEqual(btn.textContent, 'Original');
+    assert.ok(!btn.classList.contains('copied'));
   });
 });
