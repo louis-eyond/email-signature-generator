@@ -87,7 +87,8 @@ test('application logic', async (t) => {
     console: console,
     module: {},
     DOMPurify: { sanitize: (html) => html },
-    mockTimeouts: mockTimeouts, alertMessages: []
+    mockTimeouts: mockTimeouts, 
+    alertMessages: [] // Expose for testing
   };
 
   vm.createContext(context);
@@ -205,6 +206,7 @@ test('application logic', async (t) => {
     assert.ok(html.includes('github.com'));
     assert.ok(html.includes('Test disclaimer.'));
   });
+
   await t.test('UI: flash() provides visual feedback and resets', () => {
     // Clear previous timeouts if any
     context.mockTimeouts.length = 0;
