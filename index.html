@@ -602,7 +602,7 @@
     (function () {
       // ============= HELPERS =============
       function esc(str) {
-        var d = document.createElement('div');
+        const d = document.createElement('div');
         d.textContent = str;
         return d.innerHTML;
       }
@@ -626,23 +626,23 @@
       }
 
       // ============= FORM ELEMENTS =============
-      var ids = [
+      const ids = [
         'sig-name', 'sig-title', 'sig-company',
         'sig-phone', 'sig-email', 'sig-website', 'sig-meeting',
         'sig-logo', 'sig-font', 'sig-color', 'sig-color-hex',
         'sig-linkedin', 'sig-twitter', 'sig-facebook', 'sig-instagram', 'sig-github',
         'sig-disclaimer-toggle', 'sig-disclaimer'
       ];
-      var el = {};
+      const el = {};
       ids.forEach(function (id) { el[id] = document.getElementById(id); });
 
-      var preview = document.getElementById('sig-preview');
-      var disclaimerField = document.getElementById('disclaimer-field');
+      const preview = document.getElementById('sig-preview');
+      const disclaimerField = document.getElementById('disclaimer-field');
 
       // Store default values for reset
-      var defaults = {};
+      const defaults = {};
       ids.forEach(function (id) {
-        var input = el[id];
+        const input = el[id];
         if (input.type === 'checkbox') {
           defaults[id] = input.checked;
         } else {
@@ -651,7 +651,7 @@
       });
 
       // ============= SOCIAL ICON URLS =============
-      var ICONS = {
+      const ICONS = {
         linkedin:  'https://img.icons8.com/color/48/linkedin.png',
         twitter:   'https://img.icons8.com/color/48/twitterx--v2.png',
         facebook:  'https://img.icons8.com/color/48/facebook-new.png',
@@ -691,29 +691,36 @@
       }
 
       function render() {
-        var v = getValues();
-        var f = escAttr(v.font);
-        var c = escAttr(v.color);
+        const v = getValues();
+        const f = escAttr(v.font);
+        const c = escAttr(v.color);
 
-        var hasLogo    = !!v.logo;
-        var hasName    = !!v.name;
-        var hasTitle   = !!v.title;
-        var hasCompany = !!v.company;
-        var hasPhone   = !!v.phone;
-        var hasEmail   = !!v.email;
-        var hasWebsite = !!v.website;
-        var hasMeeting = !!v.meeting;
-        var hasIdentity = hasName || hasTitle || hasCompany;
-        var hasContact  = hasPhone || hasEmail || hasWebsite || hasMeeting;
+        const hasLogo    = !!v.logo;
+        const hasName    = !!v.name;
+        const hasTitle   = !!v.title;
+        const hasCompany = !!v.company;
+        const hasPhone   = !!v.phone;
+        const hasEmail   = !!v.email;
+        const hasWebsite = !!v.website;
+        const hasMeeting = !!v.meeting;
+        const hasIdentity = hasName || hasTitle || hasCompany;
+        const hasContact  = hasPhone || hasEmail || hasWebsite || hasMeeting;
 
-        var socials = [];
+        const socials = [];
+        const networks = [
+          { id: 'linkedin', alt: 'LinkedIn' },
+          { id: 'twitter', alt: 'Twitter' },
+          { id: 'facebook', alt: 'Facebook' },
+          { id: 'instagram', alt: 'Instagram' },
+          { id: 'github', alt: 'GitHub' }
+        ];
         networks.forEach(function(net) {
           if (v[net.id]) socials.push({ url: v[net.id], icon: ICONS[net.id], alt: net.alt });
         });
-        var hasSocials = socials.length > 0;
+        const hasSocials = socials.length > 0;
 
-        var hasDisclaimer = v.showDisclaimer && v.disclaimer;
-        var hasFooter = hasSocials || hasDisclaimer;
+        const hasDisclaimer = v.showDisclaimer && v.disclaimer;
+        const hasFooter = hasSocials || hasDisclaimer;
 
         // Toggle disclaimer textarea visibility
         disclaimerField.style.display = v.showDisclaimer ? '' : 'none';
@@ -723,10 +730,10 @@
           return;
         }
 
-        var cols = hasLogo ? 4 : 2;
+        let cols = hasLogo ? 4 : 2;
         if (!hasContact) cols = hasLogo ? 3 : 1;
 
-        var h = '';
+        let h = '';
         h += '<table cellpadding="0" cellspacing="0" border="0" style="font-family: ' + f + '; color: #222222; line-height: 1.5; max-width: 600px;">';
 
         // ---- MAIN ROW ----
@@ -751,16 +758,16 @@
           h += '<td valign="middle">';
           h += '<table cellpadding="0" cellspacing="0" border="0">';
 
-          var contactRows = [];
+          const contactRows = [];
           if (hasPhone) contactRows.push('phone');
           if (hasEmail) contactRows.push('email');
           if (hasWebsite) contactRows.push('website');
           if (hasMeeting) contactRows.push('meeting');
 
           contactRows.forEach(function (type, i) {
-            var isLast = i === contactRows.length - 1;
-            var pb = isLast ? '0' : '4';
-            var label, href, text;
+            const isLast = i === contactRows.length - 1;
+            const pb = isLast ? '0' : '4';
+            let label, href, text;
 
             if (type === 'phone') {
               label = 'T';
@@ -806,7 +813,7 @@
             h += '<tr><td colspan="' + cols + '" style="padding-top: 10px; padding-bottom: 10px; line-height: 0;">';
             h += '<table cellpadding="0" cellspacing="0" border="0"><tr>';
             socials.forEach(function (s, i) {
-              var pr = i < socials.length - 1 ? '8' : '0';
+              const pr = i < socials.length - 1 ? '8' : '0';
               h += '<td style="padding-right: ' + pr + 'px; line-height: 0;">';
               h += '<a href="' + escAttr(addProto(s.url)) + '" target="_blank" rel="noopener noreferrer" style="display: inline-block; text-decoration: none; line-height: 0;">';
               h += '<img src="' + escAttr(s.icon) + '" alt="' + escAttr(s.alt) + '" width="26" height="26" style="display: block; width: 26px; height: 26px; border: 0;" />';
@@ -825,7 +832,7 @@
 
           // Disclaimer
           if (hasDisclaimer) {
-            var dText = esc(v.disclaimer).replace(/\n/g, '<br>');
+            let dText = esc(v.disclaimer).replace(/\n/g, '<br>');
             // Bold the first word before a colon if present (e.g. "Important:")
             dText = dText.replace(/^([^:&<]+:)/, '<strong style="color: #555555;">$1</strong>');
 
@@ -840,7 +847,7 @@
       }
 
       // ============= EVENT LISTENERS =============
-      var textInputs = [
+      const textInputs = [
         'sig-name', 'sig-title', 'sig-company',
         'sig-phone', 'sig-email', 'sig-website', 'sig-meeting',
         'sig-logo',
@@ -857,7 +864,7 @@
       });
 
       el['sig-color-hex'].addEventListener('input', function () {
-        var hex = el['sig-color-hex'].value;
+        const hex = el['sig-color-hex'].value;
         if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
           el['sig-color'].value = hex;
         }
@@ -868,9 +875,9 @@
       el['sig-disclaimer-toggle'].addEventListener('change', render);
 
       document.getElementById('sig-logo-file').addEventListener('change', function (e) {
-        var file = e.target.files[0];
+        const file = e.target.files[0];
         if (!file) return;
-        var reader = new FileReader();
+        const reader = new FileReader();
         reader.onload = function (ev) {
           el['sig-logo'].value = ev.target.result;
           render();
@@ -879,8 +886,8 @@
       });
 
       // ============= COPY BUTTONS =============
-      var richBtn = document.getElementById('copy-rich');
-      var htmlBtn = document.getElementById('copy-html');
+      const richBtn = document.getElementById('copy-rich');
+      const htmlBtn = document.getElementById('copy-html');
 
       function flash(btn, original, label) {
         btn.textContent = label;
@@ -892,7 +899,7 @@
       }
 
       richBtn.addEventListener('click', async function () {
-        var html = preview.innerHTML;
+        const html = preview.innerHTML;
         if (!html || preview.querySelector('.preview-placeholder')) {
           return;
         }
@@ -909,14 +916,14 @@
           }
         } catch (e) { /* fall through */ }
 
-        var temp = document.createElement('div');
+        const temp = document.createElement('div');
         temp.style.position = 'fixed';
         temp.style.left = '-10000px';
         temp.innerHTML = html;
         document.body.appendChild(temp);
-        var range = document.createRange();
+        const range = document.createRange();
         range.selectNode(temp);
-        var sel = window.getSelection();
+        const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
         try {
@@ -930,7 +937,7 @@
       });
 
       htmlBtn.addEventListener('click', async function () {
-        var html = preview.innerHTML;
+        const html = preview.innerHTML;
         if (!html || preview.querySelector('.preview-placeholder')) {
           return;
         }
@@ -938,7 +945,7 @@
           await navigator.clipboard.writeText(html);
           flash(htmlBtn, 'Copy HTML source', 'Copied!');
         } catch (e) {
-          var ta = document.createElement('textarea');
+          const ta = document.createElement('textarea');
           ta.value = html;
           ta.style.position = 'fixed';
           ta.style.opacity = '0';
@@ -953,7 +960,7 @@
       // ============= RESET BUTTON =============
       document.getElementById('reset-btn').addEventListener('click', function () {
         ids.forEach(function (id) {
-          var input = el[id];
+          const input = el[id];
           if (input.type === 'checkbox') {
             input.checked = defaults[id];
           } else {
@@ -964,11 +971,11 @@
       });
 
       // ============= INSTRUCTION TABS =============
-      var tabs = document.querySelectorAll('.tab');
-      var tabContents = document.querySelectorAll('.tab-content');
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
       tabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-          var target = tab.getAttribute('data-tab');
+          const target = tab.getAttribute('data-tab');
           tabs.forEach(function (t) { t.classList.remove('active'); });
           tabContents.forEach(function (c) { c.classList.remove('active'); });
           tab.classList.add('active');
@@ -977,8 +984,8 @@
       });
 
       // ============= LIGHT / DARK TOGGLE =============
-      var modeButtons = document.querySelectorAll('.mode-btn');
-      var stage = document.getElementById('preview-stage');
+      const modeButtons = document.querySelectorAll('.mode-btn');
+      const stage = document.getElementById('preview-stage');
       modeButtons.forEach(function (btn) {
         btn.addEventListener('click', function () {
           modeButtons.forEach(function (b) { b.classList.remove('active'); });
